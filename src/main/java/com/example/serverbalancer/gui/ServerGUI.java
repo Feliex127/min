@@ -1,6 +1,6 @@
-package com.example.serverbalancer.gui;
+package com.feliex.serverbalancer.gui; // <-- 改成這個
 
-import com.example.serverbalancer.manager.ServerManager;
+import com.feliex.serverbalancer.manager.ServerManager; // <-- 統一包名
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -25,64 +25,48 @@ public class ServerGUI implements Listener {
         createInventory();
     }
 
-    // 建立 GUI
     private void createInventory() {
         inv = Bukkit.createInventory(null, 9, ChatColor.GREEN + "Server GUI");
 
-        // 創建按鈕 - Create Server
         ItemStack create = new ItemStack(Material.GREEN_WOOL);
         ItemMeta createMeta = create.getItemMeta();
         createMeta.setDisplayName(ChatColor.AQUA + "Create Server");
-        List<String> createLore = new ArrayList<>();
-        createLore.add(ChatColor.GRAY + "Click to create a new server");
-        createMeta.setLore(createLore);
+        createMeta.setLore(List.of(ChatColor.GRAY + "Click to create a new server"));
         create.setItemMeta(createMeta);
         inv.setItem(0, create);
 
-        // 創建按鈕 - Delete Server
         ItemStack delete = new ItemStack(Material.RED_WOOL);
         ItemMeta deleteMeta = delete.getItemMeta();
         deleteMeta.setDisplayName(ChatColor.RED + "Delete Server");
-        List<String> deleteLore = new ArrayList<>();
-        deleteLore.add(ChatColor.GRAY + "Click to delete a server");
-        deleteMeta.setLore(deleteLore);
+        deleteMeta.setLore(List.of(ChatColor.GRAY + "Click to delete a server"));
         delete.setItemMeta(deleteMeta);
         inv.setItem(1, delete);
 
-        // 創建按鈕 - Teleport
         ItemStack tp = new ItemStack(Material.BLUE_WOOL);
         ItemMeta tpMeta = tp.getItemMeta();
         tpMeta.setDisplayName(ChatColor.BLUE + "Teleport to Server");
-        List<String> tpLore = new ArrayList<>();
-        tpLore.add(ChatColor.GRAY + "Click to teleport");
-        tpMeta.setLore(tpLore);
+        tpMeta.setLore(List.of(ChatColor.GRAY + "Click to teleport"));
         tp.setItemMeta(tpMeta);
         inv.setItem(2, tp);
-
-        // 這裡可以繼續添加更多按鈕
     }
 
-    // 開啟 GUI
     public void open() {
         player.openInventory(inv);
     }
 
-    // 點擊事件
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getView().getTitle().equals(ChatColor.GREEN + "Server GUI")) {
-            event.setCancelled(true);
-            if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
+        if (!event.getView().getTitle().equals(ChatColor.GREEN + "Server GUI")) return;
+        event.setCancelled(true);
+        if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
 
-            String name = event.getCurrentItem().getItemMeta().getDisplayName();
-
-            if (name.equals(ChatColor.AQUA + "Create Server")) {
-                ServerManager.createServer(player);
-            } else if (name.equals(ChatColor.RED + "Delete Server")) {
-                ServerManager.deleteServer(player);
-            } else if (name.equals(ChatColor.BLUE + "Teleport to Server")) {
-                ServerManager.teleportServer(player);
-            }
+        String name = event.getCurrentItem().getItemMeta().getDisplayName();
+        if (name.equals(ChatColor.AQUA + "Create Server")) {
+            ServerManager.createServer(player);
+        } else if (name.equals(ChatColor.RED + "Delete Server")) {
+            ServerManager.deleteServer(player);
+        } else if (name.equals(ChatColor.BLUE + "Teleport to Server")) {
+            ServerManager.teleportServer(player);
         }
     }
 }
