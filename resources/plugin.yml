@@ -1,65 +1,7 @@
 name: ServerBalancer
-version: ${project.version}
-main: com.example.serverbalancer.ServerBalancer
-api-version: '1.21'
-authors: [YourName]
-description: 一個強大的 Minecraft Paper 伺服器分流插件
-website: https://github.com/yourusername/ServerBalancer
-prefix: ServerBalancer
-
-# 支援的 Minecraft 版本
-load: POSTWORLD
-loadbefore: []
-depend: []
-softdepend: ["ProtocolLib"]
-
-# 指令定義
+version: 1.0
+main: com.feliex.serverbalancer.ServerBalancer
+api-version: 1.21
 commands:
   server:
-    description: 連接至其他伺服器或查看伺服器列表
-    usage: |
-      /<command> - 顯示伺服器列表
-      /<command> <伺服器名稱> - 連接至指定伺服器
-      /<command> list - 顯示詳細伺服器列表
-    aliases: [connect, hub, lobby, join]
-    permission: serverbalancer.use
-    permission-message: "§c你沒有權限使用此指令！"
-    
-  serverbalancer:
-    description: 分流插件管理指令
-    usage: |
-      /<command> reload - 重新載入設定
-      /<command> version - 顯示插件版本
-      /<command> help - 顯示幫助訊息
-    aliases: [sb, balancer]
-    permission: serverbalancer.admin
-    permission-message: "§c你沒有管理員權限！"
-
-# 權限節點
-permissions:
-  serverbalancer.use:
-    description: 允許使用分流指令
-    default: true
-    
-  serverbalancer.admin:
-    description: 允許使用管理員指令
-    default: op
-    children:
-      serverbalancer.use: true
-      
-  serverbalancer.reload:
-    description: 允許重新載入插件設定
-    default: op
-    
-  serverbalancer.bypass:
-    description: 允許繞過連線限制
-    default: op
-    
-  serverbalancer.*:
-    description: 所有分流插件權限
-    default: op
-    children:
-      serverbalancer.use: true
-      serverbalancer.admin: true
-      serverbalancer.reload: true
-      serverbalancer.bypass: true
+    description: Server manager
