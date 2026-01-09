@@ -1,85 +1,88 @@
+package com.example.serverbalancer.gui;
+
+import com.example.serverbalancer.manager.ServerManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.ChatColor;
-import org.bukkit.World;
-package com.feliex.serverbalancer.gui;
 
-import com.feliex.serverbalancer.manager.ServerManager;
-import org.bukkit.*;
-import org.bukkit.entity.Player;
-import org.bukkit.event.*;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerGUI implements Listener {
 
-    private static final String TITLE = "§8分流管理";
-    private final ServerManager manager;
+    private final Player player;
+    private Inventory inv;
 
-    public ServerGUI(ServerManager manager) {
-        this.manager = manager;
+    public ServerGUI(Player player) {
+        this.player = player;
+        createInventory();
     }
 
-    public static void open(Player player, ServerManager manager) {
-        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
+    // 建立 GUI
+    private void createInventory() {
+        inv = Bukkit.createInventory(null, 9, ChatColor.GREEN + "Server GUI");
 
-        int slot = 0;
-        for (String server : manager.getServers()) {
-            ItemStack item = new ItemStack(Material.GRASS_BLOCK);
-            ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName("§a" + server);
-            meta.setLore(java.util.List.of(
-                    "§7左鍵: 傳送",
-                    "§cShift+右鍵: 刪除"
-            ));
-            item.setItemMeta(meta);
-            inv.setItem(slot++, item);
-        }
+        // 創建按鈕 - Create Server
+        ItemStack create = new ItemStack(Material.GREEN_WOOL);
+        ItemMeta createMeta = create.getItemMeta();
+        createMeta.setDisplayName(ChatColor.AQUA + "Create Server");
+        List<String> createLore = new ArrayList<>();
+        createLore.add(ChatColor.GRAY + "Click to create a new server");
+        createMeta.setLore(createLore);
+        create.setItemMeta(createMeta);
+        inv.setItem(0, create);
 
-        ItemStack create = new ItemStack(Material.EMERALD_BLOCK);
-        ItemMeta meta = create.getItemMeta();
-        meta.setDisplayName("§a➕ 建立新分流");
-        create.setItemMeta(meta);
+        // 創建按鈕 - Delete Server
+        ItemStack delete = new ItemStack(Material.RED_WOOL);
+        ItemMeta deleteMeta = delete.getItemMeta();
+        deleteMeta.setDisplayName(ChatColor.RED + "Delete Server");
+        List<String> deleteLore = new ArrayList<>();
+        deleteLore.add(ChatColor.GRAY + "Click to delete a server");
+        deleteMeta.setLore(deleteLore);
+        delete.setItemMeta(deleteMeta);
+        inv.setItem(1, delete);
 
-        inv.setItem(26, create);
+        // 創建按鈕 - Teleport
+        ItemStack tp = new ItemStack(Material.BLUE_WOOL);
+        ItemMeta tpMeta = tp.getItemMeta();
+        tpMeta.setDisplayName(ChatColor.BLUE + "Teleport to Server");
+        List<String> tpLore = new ArrayList<>();
+        tpLore.add(ChatColor.GRAY + "Click to teleport");
+        tpMeta.setLore(tpLore);
+        tp.setItemMeta(tpMeta);
+        inv.setItem(2, tp);
+
+        // 這裡可以繼續添加更多按鈕
+    }
+
+    // 開啟 GUI
+    public void open() {
         player.openInventory(inv);
     }
 
+    // 點擊事件
     @EventHandler
-    public void onClick(InventoryClickEvent e) {
-        if (!e.getView().getTitle().equals(TITLE)) return;
-        e.setCancelled(true);
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getView().getTitle().equals(ChatColor.GREEN + "Server GUI")) {
+            event.setCancelled(true);
+            if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
 
-        Player p = (Player) e.getWhoClicked();
-        ItemStack item = e.getCurrentItem();
-        if (item == null) return;
+            String name = event.getCurrentItem().getItemMeta().getDisplayName();
 
-        String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
-
-        if (item.getType() == Material.EMERALD_BLOCK) {
-            p.closeInventory();
-            p.sendMessage("§e請輸入 /server create <名稱>");
-            return;
-        }
-
-        if (e.isLeftClick()) {
-            World world = Bukkit.getWorld(name);
-            if (world != null)
-                p.teleport(world.getSpawnLocation());
-        }
-
-        if (e.isRightClick() && e.isShiftClick()) {
-            manager.deleteServer(name);
-            p.sendMessage("§c已刪除: " + name);
-            p.closeInventory();
+            if (name.equals(ChatColor.AQUA + "Create Server")) {
+                ServerManager.createServer(player);
+            } else if (name.equals(ChatColor.RED + "Delete Server")) {
+                ServerManager.deleteServer(player);
+            } else if (name.equals(ChatColor.BLUE + "Teleport to Server")) {
+                ServerManager.teleportServer(player);
+            }
         }
     }
 }
-
