@@ -1,21 +1,16 @@
 package com.feliex.serverbalancer.gui;
 
 import com.feliex.serverbalancer.manager.ServerManager;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.List;
 
 public class ServerGUI implements Listener {
 
-    private static final String TITLE = "§8Server Manager";
+    private static final String TITLE = "§8分流管理";
     private final ServerManager manager;
 
     public ServerGUI(ServerManager manager) {
@@ -23,50 +18,45 @@ public class ServerGUI implements Listener {
     }
 
     public void open(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 27, TITLE);
+        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
         int slot = 0;
-        for (String server : manager.getServers()) {
-            ItemStack item = new ItemStack(Material.ENDER_PEARL);
+        for (String world : manager.getWorlds()) {
+            ItemStack item = new ItemStack(Material.GRASS_BLOCK);
             ItemMeta meta = item.getItemMeta();
-
-            meta.setDisplayName("§a" + server);
-            meta.setLore(List.of(
-                    "§7Left Click → Teleport",
-                    "§cShift + Right Click → Delete"
-            ));
-
+            meta.setDisplayName("§a" + world);
+            meta.setLore(java.util.List.of("§7左鍵: 傳送", "§e右鍵: 設定"));
             item.setItemMeta(meta);
-            gui.setItem(slot++, item);
+            inv.setItem(slot++, item);
         }
 
-        player.openInventory(gui);
+        ItemStack create = new ItemStack(Material.EMERALD_BLOCK);
+        ItemMeta meta = create.getItemMeta();
+        meta.setDisplayName("§a➕ 建立世界");
+        create.setItemMeta(meta);
+        inv.setItem(26, create);
+
+        player.openInventory(inv);
     }
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         if (!e.getView().getTitle().equals(TITLE)) return;
-
         e.setCancelled(true);
 
-        if (!(e.getWhoClicked() instanceof Player player)) return;
-
+        Player p = (Player) e.getWhoClicked();
         ItemStack item = e.getCurrentItem();
-        if (item == null || !item.hasItemMeta()) return;
+        if (item == null) return;
 
-        String serverName = item.getItemMeta()
-                .getDisplayName()
-                .replace("§a", "");
-
-        if (e.isLeftClick()) {
-            manager.teleport(player, serverName);
-            player.closeInventory();
+        if (item.getType() == Material.EMERALD_BLOCK) {
+            p.closeInventory();
+            p.sendMessage("§e請輸入 /server create <名稱>");
+            return;
         }
 
-        if (e.isRightClick() && e.isShiftClick()) {
-            manager.deleteServer(serverName);
-            player.sendMessage("§cDeleted server: " + serverName);
-            player.closeInventory();
-        }
+        String world = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+
+        if (e.isLeftClick()) manager.teleport(p, world);
+        if (e.isRightClick()) new WorldSettingsGUI(manager, world).open(p);
     }
 }

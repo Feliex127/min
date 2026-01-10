@@ -1,39 +1,38 @@
 package com.feliex.serverbalancer.manager;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ServerManager {
 
-    private final Set<String> servers = new HashSet<>();
+    private final Map<String, WorldSettings> worlds = new HashMap<>();
 
-    public void createServer(String name) {
-        servers.add(name);
+    public void createWorld(String name) {
+        if (Bukkit.getWorld(name) != null) return;
+        WorldCreator creator = new WorldCreator(name);
+        creator.createWorld();
+        worlds.put(name, new WorldSettings());
     }
 
-    public void deleteServer(String name) {
-        servers.remove(name);
+    public Set<String> getWorlds() {
+        return worlds.keySet();
     }
 
-    public Set<String> getServers() {
-        return servers;
+    public WorldSettings getSettings(String world) {
+        return worlds.get(world);
     }
 
-    public void teleport(Player player, String serverName) {
-        World world = Bukkit.getWorld(serverName);
+    public void teleport(Player player, String worldName) {
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) return;
 
-        if (world == null) {
-            player.sendMessage("§cServer not found: " + serverName);
-            return;
+        WorldSettings ws = worlds.get(worldName);
+        if (ws != null) {
+            world.setPVP(ws.isPvp());
         }
 
-        Location spawn = world.getSpawnLocation();
-        player.teleport(spawn);
-        player.sendMessage("§aTeleported to " + serverName);
+        player.teleport(world.getSpawnLocation());
     }
 }
