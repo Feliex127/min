@@ -1,10 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.feliex</groupId>
-    <artifactId>ServerBalancer</artifactId>
+    <artifactId>serverbalancer</artifactId>
     <version>1.0</version>
+    <packaging>jar</packaging>
 
+    <name>ServerBalancer</name>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- Paper Repository -->
     <repositories>
         <repository>
             <id>papermc</id>
@@ -12,16 +25,20 @@
         </repository>
     </repositories>
 
-    <dependency>
-        <groupId>io.papermc.paper</groupId>
-        <artifactId>paper-api</artifactId>
-        <version>1.21.8-R0.1-SNAPSHOT</version>
-        <scope>provided</scope>
-    </dependency>
-
+    <!-- Dependencies 一定要包在這裡 -->
+    <dependencies>
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
+
+            <!-- Java 21 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -31,6 +48,23 @@
                     <target>21</target>
                 </configuration>
             </plugin>
+
+            <!-- Shade（可選，但保留） -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
+
 </project>
