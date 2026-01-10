@@ -1,8 +1,8 @@
 name: ServerBalancer
-version: 1.0
 main: com.feliex.serverbalancer.ServerBalancer
-api-version: 1.21
-
+version: 1.0
+api-version: "1.21"
 commands:
   server:
-    description: Server GUI
+    description: Open server GUI
+    usage: /server
