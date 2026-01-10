@@ -1,22 +1,22 @@
 package com.feliex.serverbalancer.manager;
 
 public class WorldSettings {
-    private boolean pvpEnabled = false;
+    private boolean pvp = false;
     private boolean sharedInventory = false;
 
-    public boolean isPvpEnabled() {
-        return pvpEnabled;
+    public boolean isPvp() {
+        return pvp;
     }
 
-    public void setPvpEnabled(boolean pvpEnabled) {
-        this.pvpEnabled = pvpEnabled;
+    public void togglePvp() {
+        pvp = !pvp;
     }
 
     public boolean isSharedInventory() {
         return sharedInventory;
     }
 
-    public void setSharedInventory(boolean sharedInventory) {
-        this.sharedInventory = sharedInventory;
+    public void toggleSharedInventory() {
+        sharedInventory = !sharedInventory;
     }
 }
