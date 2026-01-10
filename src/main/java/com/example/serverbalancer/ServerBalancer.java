@@ -6,19 +6,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerBalancer extends JavaPlugin {
 
-    private static ServerBalancer instance;
     private ServerManager serverManager;
+    private ServerGUI serverGUI;
 
     @Override
     public void onEnable() {
-        instance = this;
-        serverManager = new ServerManager(this);
+        serverManager = new ServerManager();
+        serverGUI = new ServerGUI(serverManager);
 
-        getCommand("server").setExecutor(new ServerCommand(serverManager));
-        getServer().getPluginManager().registerEvents(new ServerGUI(serverManager), this);
-    }
+        getServer().getPluginManager().registerEvents(serverGUI, this);
+        getCommand("server").setExecutor(new ServerCommand(serverGUI));
 
-    public static ServerBalancer get() {
-        return instance;
+        getLogger().info("ServerBalancer enabled");
     }
 }

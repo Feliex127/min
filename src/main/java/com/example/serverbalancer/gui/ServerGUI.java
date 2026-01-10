@@ -4,14 +4,18 @@ import com.feliex.serverbalancer.manager.ServerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
-public class ServerGUI {
+public class ServerGUI implements Listener {
 
+    private static final String TITLE = "§8Server Manager";
     private final ServerManager manager;
 
     public ServerGUI(ServerManager manager) {
@@ -19,7 +23,7 @@ public class ServerGUI {
     }
 
     public void open(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 27, "§8Server Manager");
+        Inventory gui = Bukkit.createInventory(null, 27, TITLE);
 
         int slot = 0;
         for (String server : manager.getServers()) {
@@ -28,8 +32,8 @@ public class ServerGUI {
 
             meta.setDisplayName("§a" + server);
             meta.setLore(List.of(
-                    "§7Click to teleport",
-                    "§8Server: " + server
+                    "§7Left Click → Teleport",
+                    "§cShift + Right Click → Delete"
             ));
 
             item.setItemMeta(meta);
@@ -39,13 +43,30 @@ public class ServerGUI {
         player.openInventory(gui);
     }
 
-    public void handleClick(Player player, ItemStack item) {
+    @EventHandler
+    public void onClick(InventoryClickEvent e) {
+        if (!e.getView().getTitle().equals(TITLE)) return;
+
+        e.setCancelled(true);
+
+        if (!(e.getWhoClicked() instanceof Player player)) return;
+
+        ItemStack item = e.getCurrentItem();
         if (item == null || !item.hasItemMeta()) return;
 
-        String name = item.getItemMeta().getDisplayName();
-        if (name == null) return;
+        String serverName = item.getItemMeta()
+                .getDisplayName()
+                .replace("§a", "");
 
-        String serverName = name.replace("§a", "");
-        manager.teleport(player, serverName);
+        if (e.isLeftClick()) {
+            manager.teleport(player, serverName);
+            player.closeInventory();
+        }
+
+        if (e.isRightClick() && e.isShiftClick()) {
+            manager.deleteServer(serverName);
+            player.sendMessage("§cDeleted server: " + serverName);
+            player.closeInventory();
+        }
     }
 }
