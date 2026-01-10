@@ -1,72 +1,73 @@
-package com.feliex.serverbalancer.gui; // <-- 改成這個
+package com.feliex.serverbalancer.gui;
 
-import com.feliex.serverbalancer.manager.ServerManager; // <-- 統一包名
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import com.feliex.serverbalancer.manager.ServerManager;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.bukkit.inventory.*;
 
 public class ServerGUI implements Listener {
 
-    private final Player player;
-    private Inventory inv;
+    private static final String TITLE = "§8分流管理";
+    private final ServerManager manager;
 
-    public ServerGUI(Player player) {
-        this.player = player;
-        createInventory();
+    public ServerGUI(ServerManager manager) {
+        this.manager = manager;
     }
 
-    private void createInventory() {
-        inv = Bukkit.createInventory(null, 9, ChatColor.GREEN + "Server GUI");
+    public static void open(Player player, ServerManager manager) {
+        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
-        ItemStack create = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta createMeta = create.getItemMeta();
-        createMeta.setDisplayName(ChatColor.AQUA + "Create Server");
-        createMeta.setLore(List.of(ChatColor.GRAY + "Click to create a new server"));
-        create.setItemMeta(createMeta);
-        inv.setItem(0, create);
+        int slot = 0;
+        for (String server : manager.getServers()) {
+            ItemStack item = new ItemStack(Material.GRASS_BLOCK);
+            ItemMeta meta = item.getItemMeta();
+            meta.setDisplayName("§a" + server);
+            meta.setLore(java.util.List.of(
+                    "§7左鍵: 傳送",
+                    "§cShift+右鍵: 刪除"
+            ));
+            item.setItemMeta(meta);
+            inv.setItem(slot++, item);
+        }
 
-        ItemStack delete = new ItemStack(Material.RED_WOOL);
-        ItemMeta deleteMeta = delete.getItemMeta();
-        deleteMeta.setDisplayName(ChatColor.RED + "Delete Server");
-        deleteMeta.setLore(List.of(ChatColor.GRAY + "Click to delete a server"));
-        delete.setItemMeta(deleteMeta);
-        inv.setItem(1, delete);
+        ItemStack create = new ItemStack(Material.EMERALD_BLOCK);
+        ItemMeta meta = create.getItemMeta();
+        meta.setDisplayName("§a➕ 建立新分流");
+        create.setItemMeta(meta);
 
-        ItemStack tp = new ItemStack(Material.BLUE_WOOL);
-        ItemMeta tpMeta = tp.getItemMeta();
-        tpMeta.setDisplayName(ChatColor.BLUE + "Teleport to Server");
-        tpMeta.setLore(List.of(ChatColor.GRAY + "Click to teleport"));
-        tp.setItemMeta(tpMeta);
-        inv.setItem(2, tp);
-    }
-
-    public void open() {
+        inv.setItem(26, create);
         player.openInventory(inv);
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().equals(ChatColor.GREEN + "Server GUI")) return;
-        event.setCancelled(true);
-        if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
+    public void onClick(InventoryClickEvent e) {
+        if (!e.getView().getTitle().equals(TITLE)) return;
 
-        String name = event.getCurrentItem().getItemMeta().getDisplayName();
-        if (name.equals(ChatColor.AQUA + "Create Server")) {
-            ServerManager.createServer(player);
-        } else if (name.equals(ChatColor.RED + "Delete Server")) {
-            ServerManager.deleteServer(player);
-        } else if (name.equals(ChatColor.BLUE + "Teleport to Server")) {
-            ServerManager.teleportServer(player);
+        e.setCancelled(true);
+        if (!(e.getWhoClicked() instanceof Player player)) return;
+
+        ItemStack item = e.getCurrentItem();
+        if (item == null || !item.hasItemMeta()) return;
+
+        String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+
+        if (item.getType() == Material.EMERALD_BLOCK) {
+            player.closeInventory();
+            player.sendMessage("§e請使用 /server create <名稱>");
+            return;
+        }
+
+        if (e.isLeftClick()) {
+            manager.teleport(name, player);
+        }
+
+        if (e.isRightClick() && e.isShiftClick()) {
+            manager.deleteServer(name);
+            player.sendMessage("§c已刪除分流: " + name);
+            player.closeInventory();
         }
     }
 }
