@@ -1,10 +1,12 @@
 name: ServerBalancer
-main: com.feliex.serverbalancer.ServerBalancer
 version: 1.0
-api-version: "1.21"
+main: com.feliex.serverbalancer.ServerBalancer
+api-version: 1.21
 commands:
   server:
-    description: 打開伺服器分流管理 GUI
+    description: 打開分流管理介面
+    usage: /<command>
 permissions:
-  serverbalancer.use:
-    default: true
+  serverbalancer.admin:
+    description: 使用管理指令
+    default: op

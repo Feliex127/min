@@ -3,7 +3,6 @@ package com.feliex.serverbalancer.gui;
 import com.feliex.serverbalancer.manager.ServerManager;
 import com.feliex.serverbalancer.manager.WorldSettings;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -25,18 +24,15 @@ public class ServerGUI implements Listener {
         this.manager = manager;
     }
 
-    public void open(Player player) {
+    public static void open(Player player, ServerManager manager) {
         Inventory inv = Bukkit.createInventory(null, 27, TITLE);
-
         int slot = 0;
+
         for (String server : manager.getServers()) {
             ItemStack item = new ItemStack(Material.GRASS_BLOCK);
             ItemMeta meta = item.getItemMeta();
             meta.setDisplayName("§a" + server);
-            meta.setLore(List.of(
-                    "§7左鍵: 傳送",
-                    "§c右鍵: 設定"
-            ));
+            meta.setLore(List.of("§7左鍵: 傳送", "§c右鍵: 設定"));
             item.setItemMeta(meta);
             inv.setItem(slot++, item);
         }
@@ -45,8 +41,8 @@ public class ServerGUI implements Listener {
         ItemMeta meta = create.getItemMeta();
         meta.setDisplayName("§a➕ 建立新分流");
         create.setItemMeta(meta);
-
         inv.setItem(26, create);
+
         player.openInventory(inv);
     }
 
@@ -54,12 +50,10 @@ public class ServerGUI implements Listener {
     public void onClick(InventoryClickEvent e) {
         if (!e.getView().getTitle().equals(TITLE)) return;
         e.setCancelled(true);
-
         Player p = (Player) e.getWhoClicked();
         ItemStack item = e.getCurrentItem();
         if (item == null) return;
-
-        String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+        String name = item.getItemMeta().getDisplayName().replace("§a", "");
 
         if (item.getType() == Material.EMERALD_BLOCK) {
             p.closeInventory();
@@ -69,16 +63,11 @@ public class ServerGUI implements Listener {
 
         if (e.isLeftClick()) {
             World world = Bukkit.getWorld(name);
-            if (world != null)
-                p.teleport(world.getSpawnLocation());
+            if (world != null) p.teleport(world.getSpawnLocation());
         }
 
         if (e.isRightClick()) {
-            p.closeInventory();
-            WorldSettings ws = manager.getWorldSettings(name);
-            if (ws != null) {
-                new WorldSettingsGUI(manager, ws).open(p);
-            }
+            WorldSettingsGUI.open(p, name, manager.getWorldSettings(name));
         }
     }
 }
