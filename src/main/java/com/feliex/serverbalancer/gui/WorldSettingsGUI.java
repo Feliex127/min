@@ -19,31 +19,34 @@ public class WorldSettingsGUI implements Listener {
 
     private static final String TITLE = "§8世界設定";
     private final ServerManager manager;
-    private final String worldName;
+    private final WorldSettings ws;
 
-    public WorldSettingsGUI(ServerManager manager, String worldName) {
+    public WorldSettingsGUI(ServerManager manager, WorldSettings ws) {
         this.manager = manager;
-        this.worldName = worldName;
+        this.ws = ws;
+    }
+
+    public WorldSettingsGUI(ServerManager manager) {
+        this.manager = manager;
+        this.ws = null;
     }
 
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 9, TITLE);
-        WorldSettings ws = manager.getSettings(worldName);
+        Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
         ItemStack pvpItem = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta pvpMeta = pvpItem.getItemMeta();
-        pvpMeta.setDisplayName("§aPvP: " + (ws.isPvp() ? "§c開啟" : "§a關閉"));
+        pvpMeta.setDisplayName("§aPvP: " + (ws.isPvp() ? "開啟" : "關閉"));
         pvpItem.setItemMeta(pvpMeta);
-        inv.setItem(0, pvpItem);
+        inv.setItem(11, pvpItem);
 
-        ItemStack invItem = new ItemStack(Material.CHEST);
-        ItemMeta invMeta = invItem.getItemMeta();
-        invMeta.setDisplayName("§a共享背包: " + (ws.isSharedInventory() ? "§c開啟" : "§a關閉"));
-        invItem.setItemMeta(invMeta);
-        inv.setItem(1, invItem);
+        ItemStack sharedInv = new ItemStack(Material.CHEST);
+        ItemMeta chestMeta = sharedInv.getItemMeta();
+        chestMeta.setDisplayName("§a背包共享: " + (ws.isSharedInventory() ? "開啟" : "關閉"));
+        sharedInv.setItemMeta(chestMeta);
+        inv.setItem(15, sharedInv);
 
         player.openInventory(inv);
-        Bukkit.getPluginManager().registerEvents(this, Bukkit.getPluginManager().getPlugin("ServerBalancer"));
     }
 
     @EventHandler
@@ -53,19 +56,18 @@ public class WorldSettingsGUI implements Listener {
 
         Player p = (Player) e.getWhoClicked();
         ItemStack item = e.getCurrentItem();
-        if (item == null || item.getType() == Material.AIR) return;
+        if (item == null || ws == null) return;
 
-        WorldSettings ws = manager.getSettings(worldName);
+        String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
 
         if (item.getType() == Material.DIAMOND_SWORD) {
             ws.togglePvp();
+            open(p);
         }
 
         if (item.getType() == Material.CHEST) {
             ws.toggleSharedInventory();
+            open(p);
         }
-
-        p.closeInventory();
-        open(p);
     }
 }

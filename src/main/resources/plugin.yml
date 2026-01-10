@@ -4,5 +4,7 @@ version: 1.0
 api-version: "1.21"
 commands:
   server:
-    description: Open server GUI
-    usage: /server
+    description: 打開伺服器分流管理 GUI
+permissions:
+  serverbalancer.use:
+    default: true

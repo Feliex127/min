@@ -1,6 +1,7 @@
 package com.feliex.serverbalancer.manager;
 
 public class WorldSettings {
+
     private boolean pvp = false;
     private boolean sharedInventory = false;
 

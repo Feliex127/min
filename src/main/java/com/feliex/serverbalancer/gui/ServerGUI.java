@@ -25,48 +25,28 @@ public class ServerGUI implements Listener {
         this.manager = manager;
     }
 
-    public ServerManager getManager() {
-        return manager;
-    }
-
-    /**
-     * 打開 GUI
-     */
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
         int slot = 0;
-        for (String serverName : manager.getServers()) {
+        for (String server : manager.getServers()) {
             ItemStack item = new ItemStack(Material.GRASS_BLOCK);
             ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.setDisplayName("§a" + serverName);
-
-                WorldSettings ws = manager.getWorldSettings(serverName);
-                String pvp = ws.isPvp() ? "§a已啟用" : "§c已禁用";
-                String shared = ws.isSharedInventory() ? "§a已啟用" : "§c已禁用";
-
-                meta.setLore(List.of(
-                        "§7左鍵: 傳送",
-                        "§7右鍵: 世界設定",
-                        "§7PvP: " + pvp,
-                        "§7共享背包: " + shared
-                ));
-                item.setItemMeta(meta);
-            }
+            meta.setDisplayName("§a" + server);
+            meta.setLore(List.of(
+                    "§7左鍵: 傳送",
+                    "§c右鍵: 設定"
+            ));
+            item.setItemMeta(meta);
             inv.setItem(slot++, item);
         }
 
-        // 創建新世界按鈕
         ItemStack create = new ItemStack(Material.EMERALD_BLOCK);
         ItemMeta meta = create.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName("§a➕ 創建新世界");
-            meta.setLore(List.of("§7點擊後請使用指令 /server create <名稱>"));
-            create.setItemMeta(meta);
-        }
-        inv.setItem(26, create);
+        meta.setDisplayName("§a➕ 建立新分流");
+        create.setItemMeta(meta);
 
+        inv.setItem(26, create);
         player.openInventory(inv);
     }
 
@@ -75,34 +55,30 @@ public class ServerGUI implements Listener {
         if (!e.getView().getTitle().equals(TITLE)) return;
         e.setCancelled(true);
 
-        Player player = (Player) e.getWhoClicked();
+        Player p = (Player) e.getWhoClicked();
         ItemStack item = e.getCurrentItem();
-        if (item == null || item.getType() == Material.AIR) return;
+        if (item == null) return;
 
         String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
 
         if (item.getType() == Material.EMERALD_BLOCK) {
-            player.closeInventory();
-            player.sendMessage("§e請輸入 /server create <世界名稱> 以創建新世界");
+            p.closeInventory();
+            p.sendMessage("§e請輸入 /server create <名稱>");
             return;
         }
 
-        WorldSettings ws = manager.getWorldSettings(name);
-        if (ws == null) return;
-
         if (e.isLeftClick()) {
-            // 左鍵: 傳送
             World world = Bukkit.getWorld(name);
-            if (world != null) {
-                player.teleport(world.getSpawnLocation());
-                player.sendMessage("§a已傳送至 " + name);
-            }
+            if (world != null)
+                p.teleport(world.getSpawnLocation());
         }
 
         if (e.isRightClick()) {
-            // 右鍵: 打開世界設定 GUI
-            WorldSettingsGUI settingsGUI = new WorldSettingsGUI(manager, ws);
-            settingsGUI.open(player);
+            p.closeInventory();
+            WorldSettings ws = manager.getWorldSettings(name);
+            if (ws != null) {
+                new WorldSettingsGUI(manager, ws).open(p);
+            }
         }
     }
 }
